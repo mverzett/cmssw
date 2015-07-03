@@ -163,8 +163,8 @@ TaggingVariableList TemplatedSoftLeptonTagInfo<REF>::taggingVariables(void) cons
     const SoftLeptonProperties & data = m_leptons[i].second;
     list.insert( TaggingVariable(btau::leptonQuality,  data.quality(SoftLeptonProperties::Quality::leptonId, false)), true );
     list.insert( TaggingVariable(btau::leptonQuality2, data.quality(SoftLeptonProperties::Quality::btagLeptonCands, false)), true );
-    list.insert( TaggingVariable(btau::trackSip2dSig,  data.sip2d),    true );
-    list.insert( TaggingVariable(btau::trackSip3dSig,  data.sip3d),    true );
+    list.insert( TaggingVariable(btau::trackSip2dSig,  data.sip2d),    true ); //These are correct! it turns out is just a bad naming convention
+    list.insert( TaggingVariable(btau::trackSip3dSig,  data.sip3d),    true ); //data.sip[23]d stores the SIGNIFICANCE and not the value!
     list.insert( TaggingVariable(btau::trackPtRel,     data.ptRel),    true );
     list.insert( TaggingVariable(btau::trackP0Par,     data.p0Par),    true );
     list.insert( TaggingVariable(btau::trackEtaRel,    data.etaRel),   true );

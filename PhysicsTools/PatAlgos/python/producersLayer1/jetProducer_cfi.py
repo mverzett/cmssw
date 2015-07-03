@@ -46,7 +46,10 @@ patJets = cms.EDProducer("PATJetProducer",
         cms.InputTag("pfCombinedSecondaryVertexV2BJetTags"),
         cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
         cms.InputTag("pfCombinedSecondaryVertexSoftLeptonBJetTags"),
-        cms.InputTag("pfCombinedMVABJetTags")
+        cms.InputTag("pfCombinedMVABJetTags"),
+        #CTagging
+        cms.InputTag('pfCombinedCvsLJetTags'),
+        cms.InputTag('pfCombinedCvsBJetTags')
     ),
     # clone tag infos ATTENTION: these take lots of space!
     # usually the discriminators from the default algos

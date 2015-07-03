@@ -419,6 +419,28 @@ class AddJetCollection(ConfigToolBase):
                         setattr(process, btagInfo+_labelName+postfix, btag.pfInclusiveSecondaryVertexFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), extSVCollection=svSource))
                         if svClustering:
                             setupSVClustering(getattr(process, btagInfo+_labelName+postfix), _algo, rParam, fatJets, groomedFatJets)
+                    if btagInfo == 'pfInclusiveSecondaryVertexFinderCvsLTagInfos':
+                        setattr(
+                            process, 
+                            btagInfo+_labelName+postfix, 
+                            btag.pfInclusiveSecondaryVertexFinderCvsLTagInfos.clone(
+                                trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), 
+                                extSVCollection=svSource
+                                )
+                            )
+                        if svClustering:
+                            setupSVClustering(getattr(process, btagInfo+_labelName+postfix), _algo, rParam, fatJets, groomedFatJets)
+                    if btagInfo == 'pfInclusiveSecondaryVertexFinderCvsBTagInfos':
+                        setattr(
+                            process, 
+                            btagInfo+_labelName+postfix, 
+                            btag.pfInclusiveSecondaryVertexFinderCvsBTagInfos.clone(
+                                trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), 
+                                extSVCollection=svSource
+                                )
+                            )
+                        if svClustering:
+                            setupSVClustering(getattr(process, btagInfo+_labelName+postfix), _algo, rParam, fatJets, groomedFatJets)
                     if btagInfo == 'pfSecondaryVertexNegativeTagInfos':
                         setattr(process, btagInfo+_labelName+postfix, btag.pfSecondaryVertexNegativeTagInfos.clone(trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix)))
                     if btagInfo == 'pfInclusiveSecondaryVertexFinderNegativeTagInfos':
