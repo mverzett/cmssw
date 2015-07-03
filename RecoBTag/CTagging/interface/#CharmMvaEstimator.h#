@@ -1,0 +1,61 @@
+//--------------------------------------------------------------------------------------------------
+// $Id $
+//
+// CharmMvaEstimator
+//
+// Helper Class for applying CharmTagging ID
+//
+// Authors: M. Verzetti
+//--------------------------------------------------------------------------------------------------
+
+
+//#define STANDALONE   // <---- this line
+
+#ifndef CharmMvaEstimator_H
+#define CharmMvaEstimator_H
+
+#include "TMVA/Factory.h"
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
+#include <memory>
+#include <vector>
+
+class CharmMvaEstimator{
+public:
+	CharmMvaEstimator(std::string);
+	~CharmMvaEstimator(){}; 
+    
+	Double_t mvaValue(Float_t, Float_t, Float_t,Float_t,Float_t,Float_t);
+
+private:
+	std::unique_ptr<TMVA::Reader> TMVAReader;
+
+	//MVA Vari
+	//I do not really like all this hard-coding, is there a better way? 
+  float "trackSip2dSig_0" Label="trackSip2dSig_0" Title="trackSip2dSig_0" Unit="" Internal="trackSip2dSig_0" Type="F" Min="-4.92548447e+01" Max="1.55082657e+02"/>
+  float "trackSip2dSig_1" Label="trackSip2dSig_1" Title="trackSip2dSig_1" Unit="" Internal="trackSip2dSig_1" Type="F" Min="-7.05114212e+01" Max="9.56138687e+01"/>
+  float "trackSip2dSig_2" Label="trackSip2dSig_2" Title="trackSip2dSig_2" Unit="" Internal="trackSip2dSig_2" Type="F" Min="-6.55887833e+01" Max="5.07978592e+01"/>
+  float "trackSip3dSig_0" Label="trackSip3dSig_0" Title="trackSip3dSig_0" Unit="" Internal="trackSip3dSig_0" Type="F" Min="-3.01945496e+02" Max="2.80989807e+02"/>
+  float "trackSip3dSig_1" Label="trackSip3dSig_1" Title="trackSip3dSig_1" Unit="" Internal="trackSip3dSig_1" Type="F" Min="-2.54508820e+02" Max="2.52260361e+02"/>
+  float "trackSip3dSig_2" Label="trackSip3dSig_2" Title="trackSip3dSig_2" Unit="" Internal="trackSip3dSig_2" Type="F" Min="-1.83796646e+02" Max="2.35523270e+02"/>
+  float "trackSip2dVal_0" Label="trackSip2dVal_0" Title="trackSip2dVal_0" Unit="" Internal="trackSip2dVal_0" Type="F" Min="-1.97117925e-01" Max="1.99996248e-01"/>
+  float "trackSip3dVal_0" Label="trackSip3dVal_0" Title="trackSip3dVal_0" Unit="" Internal="trackSip3dVal_0" Type="F" Min="-1.25056565e+00" Max="1.34615874e+00"/>
+  float "trackSip3dVal_1" Label="trackSip3dVal_1" Title="trackSip3dVal_1" Unit="" Internal="trackSip3dVal_1" Type="F" Min="-1.36829484e+00" Max="1.21539545e+00"/>
+    <Variable VarIndex="9" Expression="trackDecayLenVal_0" Label="trackDecayLenVal_0" Title="trackDecayLenVal_0" Unit="" Internal="trackDecayLenVal_0" Type="F" Min="9.96299514e-06" Max="4.99967098e+00"/>
+    <Variable VarIndex="10" Expression="vertexMass_0" Label="vertexMass_0" Title="vertexMass_0" Unit="" Internal="vertexMass_0" Type="F" Min="-1.00000001e-01" Max="8.65675049e+02"/>
+    <Variable VarIndex="11" Expression="trackSip2dSigAboveCharm_0" Label="trackSip2dSigAboveCharm_0" Title="trackSip2dSigAboveCharm_0" Unit="" Internal="trackSip2dSigAboveCharm_0" Type="F" Min="-7.07608566e+01" Max="9.56138687e+01"/>
+    <Variable VarIndex="12" Expression="trackSip3dSigAboveCharm_0" Label="trackSip3dSigAboveCharm_0" Title="trackSip3dSigAboveCharm_0" Unit="" Internal="trackSip3dSigAboveCharm_0" Type="F" Min="-3.31400177e+02" Max="1.89215134e+02"/>
+    <Variable VarIndex="13" Expression="flightDistance2dSig_0" Label="flightDistance2dSig_0" Title="flightDistance2dSig_0" Unit="" Internal="flightDistance2dSig_0" Type="F" Min="-1.00000000e+00" Max="5.19286804e+02"/>
+    <Variable VarIndex="14" Expression="flightDistance3dSig_0" Label="flightDistance3dSig_0" Title="flightDistance3dSig_0" Unit="" Internal="flightDistance3dSig_0" Type="F" Min="-1.00000000e+00" Max="5.17883911e+02"/>
+    <Variable VarIndex="15" Expression="vertexJetDeltaR_0" Label="vertexJetDeltaR_0" Title="vertexJetDeltaR_0" Unit="" Internal="vertexJetDeltaR_0" Type="F" Min="-1.00000001e-01" Max="2.99996436e-01"/>
+    <Variable VarIndex="16" Expression="massVertexEnergyFraction_0" Label="massVertexEnergyFraction_0" Title="massVertexEnergyFraction_0" Unit="" Internal="massVertexEnergyFraction_0" Type="F" Min="-1.00000001e-01" Max="2.17212817e+03"/>
+    <Variable VarIndex="17" Expression="vertexBoostOverSqrtJetPt_0" Label="vertexBoostOverSqrtJetPt_0" Title="vertexBoostOverSqrtJetPt_0" Unit="" Internal="vertexBoostOverSqrtJetPt_0" Type="F" Min="-1.00000001e-01" Max="9.99835074e-01"/>
+    <Variable VarIndex="18" Expression="leptonSip3d_0" Label="leptonSip3d_0" Title="leptonSip3d_0" Unit="" Internal="leptonSip3d_0" Type="F" Min="-1.45696621e+04" Max="1.34093066e+04"/>
+    <Variable VarIndex="19" Expression="leptonSip3d_1" Label="leptonSip3d_1" Title="leptonSip3d_1" Unit="" Internal="leptonSip3d_1" Type="F" Min="-1.73199941e+04" Max="7.08236719e+03"/>
+    <Variable VarIndex="20" Expression="leptonRatio_0" Label="leptonRatio_0" Title="leptonRatio_0" Unit="" Internal="leptonRatio_0" Type="F" Min="-1.00000000e+00" Max="1.00000000e+00"/>
+    <Variable VarIndex="21" Expression="vertexNTracks_0" Label="vertexNTracks_0" Title="vertexNTracks_0" Unit="" Internal="vertexNTracks_0" Type="I" Min="0.00000000e+00" Max="4.40000000e+01"/>
+
+	float mva_sip3d, mva_sip2d, mva_ptRel, mva_deltaR, mva_ratio, mva_e_pi;
+};
+
+#endif
