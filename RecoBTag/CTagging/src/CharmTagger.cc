@@ -8,23 +8,22 @@
 #include <map>
 
 CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
-	variables_(configuration.getParameter<vpset>("variables")),
-	computer_label_(configuration.getParameter<edm::ESInputTag>("computer"))
+	variables_(configuration.getParameter<vpset>("variables"))
 {
 	uses("seTagInfos");
 
 	edm::FileInPath weight_file=configuration.getParameter<edm::FileInPath>("weightFile");
 	mvaID_.reset(new TMVAEvaluator());
 	
-	std::vector<std::string> variables(variables.size());
+	std::vector<std::string> variable_names(variables_.size());
 	for(auto &var : variables_) {
-		variables.push_back(
+		variable_names.push_back(
 			var.getParameter<std::string>("name")
 			);
 	}
 	std::vector<std::string> spectators;
 	
-	mvaID_->initialize("Color:Silent:Error", "BDT", weight_file.fullPath(), variables, spectators);
+	mvaID_->initialize("Color:Silent:Error", "BDT", weight_file.fullPath(), variable_names, spectators);
 }
 
 
