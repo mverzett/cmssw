@@ -84,13 +84,14 @@ pfBTagging = cms.Sequence(
 pfCTagging = cms.Sequence(
     ( inclusiveCandidateVertexingCtagL *
       pfInclusiveSecondaryVertexFinderCtagLTagInfos
-    ) *
+    )
 
     # CSV + soft-lepton variables combined (ctagger optimized for c vs dusg)
-    pfCombinedSecondaryVertexSoftLeptonCtagLJetTags
+    #* pfCombinedSecondaryVertexSoftLeptonCtagLJetTags
+    * pfCombinedTMVACtagLJetTags
 )
 
 btagging = cms.Sequence(
     legacyBTagging +
-    pfBTagging #* pfCTagging
+    pfBTagging * pfCTagging
 )
