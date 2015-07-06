@@ -8,18 +8,31 @@
 #include <map>
 
 CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
-	variables_(configuration.getParameter<vpset>("variables"))
+	sl_computer_(configuration)
 {
 	uses("seTagInfos");
 
 	edm::FileInPath weight_file=configuration.getParameter<edm::FileInPath>("weightFile");
 	mvaID_.reset(new TMVAEvaluator());
 	
-	std::vector<std::string> variable_names(variables_.size());
-	for(auto &var : variables_) {
+	vpset vars_def = configuration.getParameter<vpset>("variables");
+	std::vector<std::string> variable_names(vars_def.size());
+	variables_.reserve(vars_def.size());
+	for(auto &var : vars_def) {
 		variable_names.push_back(
 			var.getParameter<std::string>("name")
 			);
+
+		MVAVar mva_var;
+		mva_var.name = var.getParameter<std::string>("name");
+		mva_var.id = reco::getTaggingVariableName(
+			var.getParameter<std::string>("taggingVarName")
+			);
+		mva_var.has_index = var.existsAs<int>("idx") ;
+		mva_var.index = mva_var.has_index ? var.getParameter<int>("idx") : 0;
+		mva_var.default_value = var.getParameter<double>("default");
+
+		variables_.push_back(mva_var);
 	}
 	std::vector<std::string> spectators;
 	
@@ -34,18 +47,24 @@ float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
 	const reco::CandIPTagInfo & sv_info = tagInfo.get<reco::CandIPTagInfo>("pfInclusiveSecondaryVertexFinderCtagLTagInfos");
 	const reco::CandSoftLeptonTagInfo& softel_info = tagInfo.get<reco::CandSoftLeptonTagInfo>("softPFMuonsTagInfos");
 	const reco::CandSoftLeptonTagInfo& softmu_info = tagInfo.get<reco::CandSoftLeptonTagInfo>("softPFElectronsTagInfos");
-	
-  // TMVAEvaluator is not thread safe
- 	std::lock_guard<std::mutex> lock(mutex_);
-	ip_info.hasProbabilities();
-	sv_info.hasProbabilities();
-	softel_info.leptons();
-	softmu_info.leptons();
+	reco::TaggingVariableList vars = sl_computer_(ip_info, sv_info, softmu_info, softel_info);
 
 	// Loop over input variables
 	std::map<std::string, float> inputs;
-	//for(){}
+	for(auto &mva_var : variables_){
+		//vectorial tagging variable
+		if(mva_var.has_index){
+			std::vector<float> vals = vars.getList(mva_var.id, false);
+			inputs[mva_var.name] = (vals.size() > mva_var.index) ? vals[mva_var.index] : mva_var.default_value;
+		}
+		//single value tagging var
+		else {
+			inputs[mva_var.name] = vars.get(mva_var.id, mva_var.default_value);
+		}
+	}
 
+  // TMVAEvaluator is not thread safe
+ 	std::lock_guard<std::mutex> lock(mutex_);
 	//get the MVA output
 	float tag = mvaID_->evaluate(inputs);
 	return tag;

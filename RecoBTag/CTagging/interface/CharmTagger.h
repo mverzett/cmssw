@@ -6,6 +6,8 @@
 #include "RecoBTau/JetTagComputer/interface/JetTagComputer.h"
 #include <mutex>
 #include "FWCore/Utilities/interface/ESInputTag.h"
+#include "RecoBTag/SecondaryVertex/interface/CombinedSVSoftLeptonComputer.h"
+#include "DataFormats/BTauReco/interface/TaggingVariable.h"
 
 /** \class CharmTagger
  *  \author M. Verzetti, U. Rochester, N.Y.
@@ -18,12 +20,23 @@ public:
 	CharmTagger(const edm::ParameterSet & );
   virtual float discriminator(const TagInfoHelper & tagInfo) const override;
 	typedef std::vector<edm::ParameterSet> vpset;
+	
+	struct MVAVar {
+		std::string name;
+		reco::btau::TaggingVariableName id;
+		size_t index;
+		bool has_index;
+		float default_value;
+	};
 
 private:
   mutable std::mutex mutex_;
 	[[cms::thread_guard("mutex_")]] std::unique_ptr<TMVAEvaluator> mvaID_;
-	edm::ESInputTag computer_label_;
-	vpset variables_;
+	CombinedSVSoftLeptonComputer sl_computer_;
+	std::vector<MVAVar> variables_;
+	// std:: variables_;
+	// std::vector<TaggingVariableName> name_ids_;
+	// std::vector<>
 };
 
 #endif
