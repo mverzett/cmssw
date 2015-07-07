@@ -1,5 +1,6 @@
 #include "DataFormats/BTauReco/interface/CandSoftLeptonTagInfo.h"
 #include "DataFormats/BTauReco/interface/CandIPTagInfo.h"
+#include "DataFormats/BTauReco/interface/SecondaryVertexTagInfo.h"
 
 #include "RecoBTag/CTagging/interface/CharmTagger.h"
 #include <iostream>
@@ -44,7 +45,7 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
   // default value, used if there are no leptons associated to this jet
   const reco::CandIPTagInfo & ip_info = tagInfo.get<reco::CandIPTagInfo>("pfImpactParameterTagInfos");
-	const reco::CandIPTagInfo & sv_info = tagInfo.get<reco::CandIPTagInfo>("pfInclusiveSecondaryVertexFinderCtagLTagInfos");
+	const reco::CandSecondaryVertexTagInfo & sv_info = tagInfo.get<reco::CandSecondaryVertexTagInfo>("pfInclusiveSecondaryVertexFinderCtagLTagInfos");
 	const reco::CandSoftLeptonTagInfo& softel_info = tagInfo.get<reco::CandSoftLeptonTagInfo>("softPFMuonsTagInfos");
 	const reco::CandSoftLeptonTagInfo& softmu_info = tagInfo.get<reco::CandSoftLeptonTagInfo>("softPFElectronsTagInfos");
 	reco::TaggingVariableList vars = sl_computer_(ip_info, sv_info, softmu_info, softel_info);
