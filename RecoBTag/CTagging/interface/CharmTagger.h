@@ -18,6 +18,7 @@ class CharmTagger : public JetTagComputer {
 public:
   /// explicit ctor 
 	CharmTagger(const edm::ParameterSet & );
+	~CharmTagger(){}
   virtual float discriminator(const TagInfoHelper & tagInfo) const override;
 	typedef std::vector<edm::ParameterSet> vpset;
 	
