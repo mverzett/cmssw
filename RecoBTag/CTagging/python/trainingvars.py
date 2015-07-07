@@ -1,4 +1,5 @@
 import re
+import FWCore.ParameterSet.Config as cms
 
 training_vars = {
    'muonMultiplicity': {'default': -1, 'type': 'i'},    
@@ -61,8 +62,14 @@ training_vars = {
    'electronMultiplicity': {'default': -1, 'type': 'i'}
 }
 
-varname_regex_=re.compile(r'(?P<name>[a-zA-Z]+)(:?_(?P<idx>\d+))?$')
+#
+# This could be a python class, but given it only used to convert the previous dict
+# CMSSW format I think is overkill
+#
+varname_regex_=re.compile(r'(?P<name>[a-zA-Z0-9]+)(:?_(?P<idx>\d+))?$')
 def var_match(varname):
+   '''matches the name used in the MVA training to 
+   get the TaggingVariableName and index'''
    match = varname_regex_.match(varname)
    if not match:
       raise ValueError(
@@ -71,7 +78,8 @@ def var_match(varname):
          )
    return match
 
-def get_var_default(varname):
+def get_var_name(varname):
+   'returns the TaggingVariableName of a MVA Name'
    match = var_match(varname)
    name = match.group('name')
    if name not in training_vars:
@@ -80,12 +88,30 @@ def get_var_default(varname):
          'is not among the known trainig variables.'.format(
             varname, name)
          )
+   return name
+
+def get_var_default(varname):
+   'returns the default value used in the traing'
+   name = get_var_name(varname)
    return training_vars[name]['default']
 
 def get_var_idx(varname):
+   'returns the index in case of vectorial TaggingVariableName'
    match = var_match(varname)
    idx   = match.group('idx')
    return int(idx) if idx else None
+
+def get_var_pset(mvaname):
+   'returns the cms.PSet to be used by CharmTaggerESProducer'
+   pset = cms.PSet(      
+      name = cms.string(mvaname),
+      taggingVarName = cms.string(get_var_name(mvaname)),
+      default = cms.double(get_var_default(mvaname))
+      )
+   idx = get_var_idx(mvaname)
+   if idx:
+      pset.idx = cms.int32(idx)
+   return pset
 
 if __name__ == '__main__':
    assert(varname_regex_.match('leptonEtaRel_10').groupdict() == {'name': 'leptonEtaRel', 'idx': '10'})
