@@ -9,7 +9,7 @@
 #include <map>
 
 CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
-	sl_computer_(configuration)
+	sl_computer_(configuration.getParameter<edm::ParameterSet>("slComputerCfg"))
 {
 	uses("seTagInfos");
 
