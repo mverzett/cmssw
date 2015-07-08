@@ -7,18 +7,23 @@
 #include <vector>
 #include <algorithm>
 #include <map>
+#include <iostream>
 
 CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 	sl_computer_(configuration.getParameter<edm::ParameterSet>("slComputerCfg"))
 {
-	uses("seTagInfos");
+	uses(0, "pfImpactParameterTagInfos");
+	uses(1, "pfInclusiveSecondaryVertexFinderCtagLTagInfos");
+	uses(2, "softPFMuonsTagInfos");
+	uses(3, "softPFElectronsTagInfos");
 
 	edm::FileInPath weight_file=configuration.getParameter<edm::FileInPath>("weightFile");
 	mvaID_.reset(new TMVAEvaluator());
 	
 	vpset vars_def = configuration.getParameter<vpset>("variables");
-	std::vector<std::string> variable_names(vars_def.size());
-	variables_.reserve(vars_def.size());
+	std::vector<std::string> variable_names;
+	variable_names.reserve(vars_def.size());
+	std::cout << "CFG provided " << vars_def.size() << " variables" << std::endl;
 	for(auto &var : vars_def) {
 		variable_names.push_back(
 			var.getParameter<std::string>("name")
@@ -26,6 +31,7 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 
 		MVAVar mva_var;
 		mva_var.name = var.getParameter<std::string>("name");
+		std::cout << "MVA Variable: " << mva_var.name << std::endl;
 		mva_var.id = reco::getTaggingVariableName(
 			var.getParameter<std::string>("taggingVarName")
 			);
@@ -36,6 +42,7 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 		variables_.push_back(mva_var);
 	}
 	std::vector<std::string> spectators;
+	std::cout << "variable_names has " << variable_names.size() << " names" << std::endl;
 	
 	mvaID_->initialize("Color:Silent:Error", "BDT", weight_file.fullPath(), variable_names, spectators);
 }
@@ -44,10 +51,10 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 /// b-tag a jet based on track-to-jet parameters in the extened info collection
 float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
   // default value, used if there are no leptons associated to this jet
-  const reco::CandIPTagInfo & ip_info = tagInfo.get<reco::CandIPTagInfo>("pfImpactParameterTagInfos");
-	const reco::CandSecondaryVertexTagInfo & sv_info = tagInfo.get<reco::CandSecondaryVertexTagInfo>("pfInclusiveSecondaryVertexFinderCtagLTagInfos");
-	const reco::CandSoftLeptonTagInfo& softel_info = tagInfo.get<reco::CandSoftLeptonTagInfo>("softPFMuonsTagInfos");
-	const reco::CandSoftLeptonTagInfo& softmu_info = tagInfo.get<reco::CandSoftLeptonTagInfo>("softPFElectronsTagInfos");
+  const reco::CandIPTagInfo & ip_info = tagInfo.get<reco::CandIPTagInfo>(0);//"pfImpactParameterTagInfos");
+	const reco::CandSecondaryVertexTagInfo & sv_info = tagInfo.get<reco::CandSecondaryVertexTagInfo>(1);//"pfInclusiveSecondaryVertexFinderCtagLTagInfos");
+	const reco::CandSoftLeptonTagInfo& softel_info = tagInfo.get<reco::CandSoftLeptonTagInfo>(2);//"softPFMuonsTagInfos");
+	const reco::CandSoftLeptonTagInfo& softmu_info = tagInfo.get<reco::CandSoftLeptonTagInfo>(3);//"softPFElectronsTagInfos");
 	reco::TaggingVariableList vars = sl_computer_(ip_info, sv_info, softmu_info, softel_info);
 
 	// Loop over input variables
