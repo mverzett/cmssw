@@ -419,6 +419,17 @@ class AddJetCollection(ConfigToolBase):
                         setattr(process, btagInfo+_labelName+postfix, btag.pfInclusiveSecondaryVertexFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), extSVCollection=svSource))
                         if svClustering:
                             setupSVClustering(getattr(process, btagInfo+_labelName+postfix), _algo, rParam, fatJets, groomedFatJets)
+                    if btagInfo == 'pfInclusiveSecondaryVertexFinderCtagLTagInfos':
+                        setattr(
+                            process, 
+                            btagInfo+_labelName+postfix, 
+                            btag.pfInclusiveSecondaryVertexFinderCtagLTagInfos.clone(
+                                trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), 
+                                extSVCollection=svSource
+                                )
+                            )
+                        if svClustering:
+                            setupSVClustering(getattr(process, btagInfo+_labelName+postfix), _algo, rParam, fatJets, groomedFatJets)
                     if btagInfo == 'pfSecondaryVertexNegativeTagInfos':
                         setattr(process, btagInfo+_labelName+postfix, btag.pfSecondaryVertexNegativeTagInfos.clone(trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix)))
                     if btagInfo == 'pfInclusiveSecondaryVertexFinderNegativeTagInfos':
