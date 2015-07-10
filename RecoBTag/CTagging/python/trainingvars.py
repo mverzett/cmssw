@@ -64,7 +64,7 @@ training_vars = {
 
 #
 # This could be a python class, but given it only used to convert the previous dict
-# CMSSW format I think is overkill
+# to CMSSW format I think is overkill
 #
 varname_regex_=re.compile(r'(?P<name>[a-zA-Z0-9]+)(:?_(?P<idx>\d+))?$')
 def var_match(varname):
