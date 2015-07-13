@@ -123,6 +123,7 @@ supportedBtagDiscr = {
   , 'pfNegativeCombinedSecondaryVertexSoftLeptonBJetTags'   : ['pfImpactParameterTagInfos', 'pfInclusiveSecondaryVertexFinderNegativeTagInfos', 'softPFMuonsTagInfos', 'softPFElectronsTagInfos']
     #C-Tagging
   , 'pfCombinedTMVACtagLJetTags'                            : ["pfImpactParameterTagInfos", "pfInclusiveSecondaryVertexFinderCtagLTagInfos", "softPFMuonsTagInfos", "softPFElectronsTagInfos"]
+  , 'pfCombinedTMVACtagBJetTags'                            : ["pfImpactParameterTagInfos", "pfInclusiveSecondaryVertexFinderCtagLTagInfos", "softPFMuonsTagInfos", "softPFElectronsTagInfos"]
   #, 'pfCombinedSecondaryVertexSoftLeptonCtagLJetTags'       : ['pfImpactParameterTagInfos', 'pfInclusiveSecondaryVertexFinderCtagLTagInfos', 'softPFMuonsTagInfos', 'softPFElectronsTagInfos']
   #, 'pfNegativeCombinedSecondaryVertexSoftLeptonCtagLJetTags' : ['pfImpactParameterTagInfos', 'pfInclusiveSecondaryVertexFinderCtagLNegativeTagInfos', 'softPFMuonsTagInfos', 'softPFElectronsTagInfos']
   }
