@@ -419,22 +419,22 @@ class AddJetCollection(ConfigToolBase):
                         setattr(process, btagInfo+_labelName+postfix, btag.pfInclusiveSecondaryVertexFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), extSVCollection=svSource))
                         if svClustering:
                             setupSVClustering(getattr(process, btagInfo+_labelName+postfix), _algo, rParam, fatJets, groomedFatJets)
-                    if btagInfo == 'pfInclusiveSecondaryVertexFinderCtagLTagInfos':
+                    if btagInfo == 'pfInclusiveSecondaryVertexFinderCvsLTagInfos':
                         setattr(
                             process, 
                             btagInfo+_labelName+postfix, 
-                            btag.pfInclusiveSecondaryVertexFinderCtagLTagInfos.clone(
+                            btag.pfInclusiveSecondaryVertexFinderCvsLTagInfos.clone(
                                 trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), 
                                 extSVCollection=svSource
                                 )
                             )
                         if svClustering:
                             setupSVClustering(getattr(process, btagInfo+_labelName+postfix), _algo, rParam, fatJets, groomedFatJets)
-                    if btagInfo == 'pfInclusiveSecondaryVertexFinderCtagBTagInfos':
+                    if btagInfo == 'pfInclusiveSecondaryVertexFinderCvsBTagInfos':
                         setattr(
                             process, 
                             btagInfo+_labelName+postfix, 
-                            btag.pfInclusiveSecondaryVertexFinderCtagBTagInfos.clone(
+                            btag.pfInclusiveSecondaryVertexFinderCvsBTagInfos.clone(
                                 trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'+_labelName+postfix), 
                                 extSVCollection=svSource
                                 )
