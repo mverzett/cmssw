@@ -27,9 +27,8 @@ inclusiveCandidateVertexing = cms.Sequence(inclusiveCandidateVertexFinder*candid
 inclusiveCandidateVertexFinderCvsL = inclusiveCandidateVertexFinder.clone()
 inclusiveCandidateVertexFinderCvsL.vertexMinDLen2DSig = 1.25 
 inclusiveCandidateVertexFinderCvsL.vertexMinDLenSig = 0.25
-inclusiveCandidateVertexFinderCvsL.clusterizer.seedMin3DIPSignificance = 1.0
-#inclusiveCandidateVertexFinderCvsL.clusterizer.seedMin3DIPValue = 0.005
-inclusiveCandidateVertexFinderCvsL.clusterizer.distanceRatio = 10
+## inclusiveCandidateVertexFinderCvsL.clusterizer.seedMin3DIPSignificance = 1.0
+## inclusiveCandidateVertexFinderCvsL.clusterizer.distanceRatio = 10
 
 candidateVertexMergerCvsL = candidateVertexMerger.clone()
 candidateVertexMergerCvsL.secondaryVertices = cms.InputTag("inclusiveCandidateVertexFinderCvsL")
