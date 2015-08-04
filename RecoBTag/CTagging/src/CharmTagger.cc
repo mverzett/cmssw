@@ -9,8 +9,11 @@
 #include <map>
 #include <iostream>
 
+#include "TDirectory.h" //DEBUG
+
 CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
-	sl_computer_(configuration.getParameter<edm::ParameterSet>("slComputerCfg"))
+	sl_computer_(configuration.getParameter<edm::ParameterSet>("slComputerCfg")),
+	ext_file_(configuration.getParameter<std::string>("debugFile").c_str(), "recreate") //DEBUG
 {
 	uses(0, "pfImpactParameterTagInfos");
 	uses(1, "pfInclusiveSecondaryVertexFinderCtagLTagInfos");
@@ -24,6 +27,7 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 	std::vector<std::string> variable_names;
 	variable_names.reserve(vars_def.size());
 	std::cout << "CFG provided " << vars_def.size() << " variables" << std::endl;
+
 	for(auto &var : vars_def) {
 		variable_names.push_back(
 			var.getParameter<std::string>("name")
@@ -45,8 +49,31 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 	std::cout << "variable_names has " << variable_names.size() << " names" << std::endl;
 	
 	mvaID_->initialize("Color:Silent:Error", "BDT", weight_file.fullPath(), variable_names, spectators);
+
+  //DEBUG
+	variable_names.push_back("jetPt" ); 
+	variable_names.push_back("jetEta"); //DEBUG
+	std::stringstream ntnames;
+	bool first=true;
+	for(auto &vname : variable_names){
+		if(!first) ntnames << ":";
+		first = false;
+		ntnames << vname;
+	}
+	TDirectory *context = gDirectory;
+	ext_file_.cd();
+	tree_ = new TNtuple("tree", "flat support tree", ntnames.str().c_str()); //DEBUG
+	context->cd();
 }
 
+CharmTagger::~CharmTagger()//DEBUG
+{
+	TDirectory *context = gDirectory;
+	ext_file_.cd();
+	tree_->Write();
+	ext_file_.Close();
+	context->cd();
+}
 
 /// b-tag a jet based on track-to-jet parameters in the extened info collection
 float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
@@ -59,6 +86,8 @@ float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
 
 	// Loop over input variables
 	std::map<std::string, float> inputs;
+	std::vector<float> debug_values; // DEBUG
+	debug_values.reserve(variables_.size()+2);  // DEBUG
 	for(auto &mva_var : variables_){
 		//vectorial tagging variable
 		if(mva_var.has_index){
@@ -69,7 +98,11 @@ float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
 		else {
 			inputs[mva_var.name] = vars.get(mva_var.id, mva_var.default_value);
 		}
+		debug_values.push_back(inputs[mva_var.name]);
 	}
+	debug_values.push_back(vars.get(reco::btau::TaggingVariableName::jetPt) ); //DEBUG
+	debug_values.push_back(vars.get(reco::btau::TaggingVariableName::jetEta)); //DEBUG
+	tree_->Fill(&debug_values[0]);
 
   // TMVAEvaluator is not thread safe
  	std::lock_guard<std::mutex> lock(mutex_);
