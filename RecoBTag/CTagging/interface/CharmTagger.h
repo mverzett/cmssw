@@ -43,7 +43,8 @@ private:
 	std::vector<MVAVar> variables_;
 	
 	//DEBUGGING! because there seems to be no easier way to do it -.-'
-	TFile ext_file_;
+	bool debug_mode_;
+	std::unique_ptr<TFile> ext_file_;
 	TNtuple *tree_;
 };
 

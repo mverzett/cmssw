@@ -12,8 +12,7 @@
 #include "TDirectory.h" //DEBUG
 
 CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
-	sl_computer_(configuration.getParameter<edm::ParameterSet>("slComputerCfg")),
-	ext_file_(configuration.getParameter<std::string>("debugFile").c_str(), "recreate") //DEBUG
+	sl_computer_(configuration.getParameter<edm::ParameterSet>("slComputerCfg"))
 {
 	uses(0, "pfImpactParameterTagInfos");
 	uses(1, "pfInclusiveSecondaryVertexFinderCtagLTagInfos");
@@ -51,28 +50,35 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 	mvaID_->initialize("Color:Silent:Error", "BDT", weight_file.fullPath(), variable_names, spectators);
 
   //DEBUG
-	variable_names.push_back("jetPt" ); 
-	variable_names.push_back("jetEta"); //DEBUG
-	std::stringstream ntnames;
-	bool first=true;
-	for(auto &vname : variable_names){
-		if(!first) ntnames << ":";
-		first = false;
-		ntnames << vname;
+	debug_mode_ = configuration.existsAs<std::string>("debugFile");
+	if(debug_mode_){
+		ext_file_.reset(new TFile(configuration.getParameter<std::string>("debugFile").c_str(), "recreate")); //DEBUG
+		variable_names.push_back("jetPt" ); 
+		variable_names.push_back("jetEta"); 
+		variable_names.push_back("vertexCategory"); 
+		std::stringstream ntnames;
+		bool first=true;
+		for(auto &vname : variable_names){
+			if(!first) ntnames << ":";
+			first = false;
+			ntnames << vname;
+		}
+		TDirectory *context = gDirectory;
+		ext_file_->cd();
+		tree_ = new TNtuple("tree", "flat support tree", ntnames.str().c_str()); //DEBUG
+		context->cd();
 	}
-	TDirectory *context = gDirectory;
-	ext_file_.cd();
-	tree_ = new TNtuple("tree", "flat support tree", ntnames.str().c_str()); //DEBUG
-	context->cd();
 }
 
 CharmTagger::~CharmTagger()//DEBUG
 {
-	TDirectory *context = gDirectory;
-	ext_file_.cd();
-	tree_->Write();
-	ext_file_.Close();
-	context->cd();
+	if(debug_mode_){
+		TDirectory *context = gDirectory;
+		ext_file_->cd();
+		tree_->Write();
+		ext_file_->Close();
+		context->cd();
+	}
 }
 
 /// b-tag a jet based on track-to-jet parameters in the extened info collection
@@ -100,9 +106,12 @@ float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
 		}
 		debug_values.push_back(inputs[mva_var.name]);
 	}
-	debug_values.push_back(vars.get(reco::btau::TaggingVariableName::jetPt) ); //DEBUG
-	debug_values.push_back(vars.get(reco::btau::TaggingVariableName::jetEta)); //DEBUG
-	tree_->Fill(&debug_values[0]);
+	if(debug_mode_){
+		debug_values.push_back(vars.get(reco::btau::TaggingVariableName::jetPt) ); //DEBUG
+		debug_values.push_back(vars.get(reco::btau::TaggingVariableName::jetEta)); //DEBUG
+		debug_values.push_back(vars.get(reco::btau::TaggingVariableName::vertexCategory, 99)); //DEBUG
+		tree_->Fill(&debug_values[0]);
+	}
 
   // TMVAEvaluator is not thread safe
  	std::lock_guard<std::mutex> lock(mutex_);
