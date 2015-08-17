@@ -45,13 +45,13 @@ CharmTagger::CharmTagger(const edm::ParameterSet & configuration):
 		variables_.push_back(mva_var);
 	}
 	std::vector<std::string> spectators;
-	std::cout << "variable_names has " << variable_names.size() << " names" << std::endl;
 	
 	mvaID_->initialize("Color:Silent:Error", "BDT", weight_file.fullPath(), variable_names, spectators);
 
   //DEBUG
 	debug_mode_ = configuration.existsAs<std::string>("debugFile");
 	if(debug_mode_){
+		std::cout << "variable_names has " << variable_names.size() << " names" << std::endl;
 		ext_file_.reset(new TFile(configuration.getParameter<std::string>("debugFile").c_str(), "recreate")); //DEBUG
 		variable_names.push_back("jetPt" ); 
 		variable_names.push_back("jetEta"); 
@@ -86,8 +86,8 @@ float CharmTagger::discriminator(const TagInfoHelper & tagInfo) const {
   // default value, used if there are no leptons associated to this jet
   const reco::CandIPTagInfo & ip_info = tagInfo.get<reco::CandIPTagInfo>(0);//"pfImpactParameterTagInfos");
 	const reco::CandSecondaryVertexTagInfo & sv_info = tagInfo.get<reco::CandSecondaryVertexTagInfo>(1);//"pfInclusiveSecondaryVertexFinderCtagLTagInfos");
-	const reco::CandSoftLeptonTagInfo& softel_info = tagInfo.get<reco::CandSoftLeptonTagInfo>(2);//"softPFMuonsTagInfos");
-	const reco::CandSoftLeptonTagInfo& softmu_info = tagInfo.get<reco::CandSoftLeptonTagInfo>(3);//"softPFElectronsTagInfos");
+	const reco::CandSoftLeptonTagInfo& softmu_info = tagInfo.get<reco::CandSoftLeptonTagInfo>(2);//"softPFMuonsTagInfos");
+	const reco::CandSoftLeptonTagInfo& softel_info = tagInfo.get<reco::CandSoftLeptonTagInfo>(3);//"softPFElectronsTagInfos");
 	reco::TaggingVariableList vars = sl_computer_(ip_info, sv_info, softmu_info, softel_info);
 
 	// Loop over input variables
