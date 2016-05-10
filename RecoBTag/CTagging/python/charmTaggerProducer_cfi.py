@@ -50,7 +50,7 @@ charmTagsNegativeComputerCvsL.slComputerCfg.trackPseudoSelection.sip2dSigMax = -
 
 charmTagsNegativeComputerCvsB = charmTagsComputerCvsB.clone()
 
-charmTagsNegativeComputerCvsB.slComputerCfg.vertexFlip = cms.bool(True),
+charmTagsNegativeComputerCvsB.slComputerCfg.vertexFlip = cms.bool(True)
 charmTagsNegativeComputerCvsB.slComputerCfg.trackFlip = cms.bool(True)
 charmTagsNegativeComputerCvsB.slComputerCfg.trackSelection.sip3dSigMax = 0
 charmTagsNegativeComputerCvsB.slComputerCfg.trackPseudoSelection.sip3dSigMax = 0
