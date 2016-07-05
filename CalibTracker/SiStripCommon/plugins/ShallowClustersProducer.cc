@@ -1,10 +1,10 @@
 #include "CalibTracker/SiStripCommon/interface/ShallowClustersProducer.h"
-
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "RecoLocalTracker/SiStripClusterizer/interface/SiStripClusterInfo.h"
 #include "DataFormats/SiStripDigi/interface/SiStripProcessedRawDigi.h"
+#include "DataFormats/SiStripDigi/interface/SiStripRawDigi.h"
 #include "DataFormats/Common/interface/DetSetVectorNew.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
@@ -27,6 +27,7 @@ ShallowClustersProducer::ShallowClustersProducer(const edm::ParameterSet& iConfi
   produces <std::vector<float> >       ( Prefix + "seednoise"    );
   produces <std::vector<float> >       ( Prefix + "seedgain"     );
   produces <std::vector<unsigned> >    ( Prefix + "qualityisbad" );
+  produces <std::vector<short> >       ( Prefix + "commonMode"   ); //APV common mode
 
   produces <std::vector<float> >       ( Prefix + "rawchargeC"   );
   produces <std::vector<float> >       ( Prefix + "rawchargeL"   );
@@ -51,7 +52,9 @@ ShallowClustersProducer::ShallowClustersProducer(const edm::ParameterSet& iConfi
   produces <std::vector<int> >         ( Prefix + "stereo"        );
 
   theClustersToken_ = consumes<edmNew::DetSetVector<SiStripCluster> >          (iConfig.getParameter<edm::InputTag>("Clusters"));
-  theDigisToken_    = consumes<edm::DetSetVector<SiStripProcessedRawDigi> > (edm::InputTag("siStripProcessedRawDigis", ""));
+  theDigisToken_    = consumes<edm::DetSetVector<SiStripProcessedRawDigi> > (iConfig.getParameter<edm::InputTag>("ProcessedRawDigis")); //edm::InputTag("siStripProcessedRawDigis", ""));
+  commonModeToken_  = mayConsume<edm::DetSetVector<SiStripRawDigi> > (iConfig.getParameter<edm::InputTag>("CommonMode"));
+	computeCommonMode_ = iConfig.getParameter<bool>("computeCommonMode");
 }
 
 void ShallowClustersProducer::
@@ -75,6 +78,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   std::auto_ptr<std::vector<float> >          seednoise    ( new std::vector<float>() );
   std::auto_ptr<std::vector<float> >          seedgain     ( new std::vector<float>() );
   std::auto_ptr<std::vector<unsigned> >       qualityisbad ( new std::vector<unsigned>() );
+	std::auto_ptr<std::vector<short> >          commonMode   ( new std::vector<short>() ); //APV common mode
 
   std::auto_ptr<std::vector<float> >          rawchargeC   ( new std::vector<float>() );
   std::auto_ptr<std::vector<float> >          rawchargeL   ( new std::vector<float>() );
@@ -105,7 +109,12 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   edm::Handle<edm::DetSetVector<SiStripProcessedRawDigi> > rawProcessedDigis;
   //  iEvent.getByLabel("siStripProcessedRawDigis", "", rawProcessedDigis);
   iEvent.getByToken(theDigisToken_,rawProcessedDigis);
- 
+
+	edm::Handle<edm::DetSetVector<SiStripRawDigi> > commonModeDigis;
+	if(computeCommonMode_) {
+		iEvent.getByToken(commonModeToken_, commonModeDigis);
+	}
+	
   edmNew::DetSetVector<SiStripCluster>::const_iterator itClusters=clusters->begin();
   for(;itClusters!=clusters->end();++itClusters){
     uint32_t id = itClusters->id();
@@ -114,6 +123,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       
       const SiStripClusterInfo info(*cluster, iSetup, id);
       const NearDigis digis = rawProcessedDigis.isValid() ? NearDigis(info, *rawProcessedDigis) : NearDigis(info);
+			const NearDigis cmDigis = (computeCommonMode_ && commonModeDigis.isValid()) ? NearDigis(info, *commonModeDigis) : NearDigis();
 
       (number->at(0))++;
       (number->at(moduleV.subdetid))++;
@@ -130,6 +140,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       seednoise->push_back(    info.stripNoisesRescaledByGain().at(info.maxIndex())   );
       seedgain->push_back(     info.stripGains().at(info.maxIndex())                  );
       qualityisbad->push_back( info.IsAnythingBad()                                    );
+			commonMode->push_back(cmDigis.max);
 
       rawchargeC->push_back(   digis.max            );
       rawchargeL->push_back(   digis.left           );
@@ -168,6 +179,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   iEvent.put( seednoise,    Prefix + "seednoise"    );
   iEvent.put( seedgain,     Prefix + "seedgain"     );
   iEvent.put( qualityisbad, Prefix + "qualityisbad" );
+	iEvent.put( commonMode,   Prefix + "commonMode"   );
 
   iEvent.put( rawchargeC,   Prefix + "rawchargeC"   );
   iEvent.put( rawchargeL,   Prefix + "rawchargeL"   );
@@ -218,6 +230,31 @@ NearDigis(const SiStripClusterInfo& info, const edm::DetSetVector<SiStripProcess
   } else {
     *this = NearDigis(info);
   }
+}
+
+ShallowClustersProducer::NearDigis::NearDigis(const SiStripClusterInfo& info, const edm::DetSetVector<SiStripRawDigi>& rawDigis) {
+  edm::DetSetVector<SiStripRawDigi>::const_iterator digiframe = rawDigis.find(info.detId());
+  if( digiframe != rawDigis.end()) {
+    max =                                                            digiframe->data.at(info.maxStrip()/128).adc()       ;
+    left =            info.maxStrip()    > uint16_t(0)             ? digiframe->data.at((info.maxStrip()-1)/128).adc() : 0 ;
+    Lleft =           info.maxStrip()    > uint16_t(1)             ? digiframe->data.at((info.maxStrip()-2)/128).adc() : 0 ;
+    right =  unsigned(info.maxStrip()+1) < digiframe->data.size()  ? digiframe->data.at((info.maxStrip()+1)/128).adc() : 0 ;
+    Rright = unsigned(info.maxStrip()+2) < digiframe->data.size()  ? digiframe->data.at((info.maxStrip()+2)/128).adc() : 0 ;
+    first = digiframe->data.at(info.firstStrip()/128).adc();
+    last = digiframe->data.at((info.firstStrip()+info.width() - 1)/128).adc();
+  } else {
+    *this = NearDigis();
+  }
+}
+ShallowClustersProducer::NearDigis::NearDigis() {
+	//beyond ADC max range (1023)
+	max    = 1025;
+	left   = 1025;
+	Lleft  = 1025;
+	right  = 1025;
+	Rright = 1025;
+	first  = 1025;
+	last   = 1025;
 }
 
 ShallowClustersProducer::moduleVars::

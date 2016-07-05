@@ -13,6 +13,7 @@
 class SiStripClusterInfo;
 class SiStripProcessedRawDigi;
 class TrackerTopology;
+class SiStripRawDigi;
 
 class ShallowClustersProducer : public edm::EDProducer {
   
@@ -35,6 +36,8 @@ class ShallowClustersProducer : public edm::EDProducer {
   struct NearDigis { 
     NearDigis(const SiStripClusterInfo&);
     NearDigis(const SiStripClusterInfo&, const edm::DetSetVector<SiStripProcessedRawDigi>&);
+    NearDigis(const SiStripClusterInfo&, const edm::DetSetVector<SiStripRawDigi>&);
+		NearDigis();
     float max, left, right, first, last, Lleft, Rright; 
     float etaX() const {return ((left+right)/max)/2.;}
     float eta()  const {return right>left ? max/(max+right) : left/(left+max);}
@@ -43,8 +46,10 @@ class ShallowClustersProducer : public edm::EDProducer {
   };
 
   edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster> >          theClustersToken_;
-  edm::EDGetTokenT<edm::DetSetVector<SiStripProcessedRawDigi> > theDigisToken_;
-  
+  edm::EDGetTokenT<edm::DetSetVector<SiStripProcessedRawDigi> > theDigisToken_; 
+  edm::EDGetTokenT<edm::DetSetVector<SiStripRawDigi> > commonModeToken_;
+	bool computeCommonMode_;
+ 
 };
 
 #endif
