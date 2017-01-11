@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
-from RecoBTag.DeepFlavour.DeepNNTagInfoProducer_cfi import deepNNTagInfos
-from RecoBTag.DeepFlavour.DeepFlavourJetTagsProducer_cfi import deepFlavourJetTags
+from RecoBTag.Combined.DeepNNTagInfoProducer_cfi import deepNNTagInfos
+from RecoBTag.Combined.DeepFlavourJetTagsProducer_cfi import deepFlavourJetTags
 
 ##
 ## Negative and positive taggers for light SF estimation
