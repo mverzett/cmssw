@@ -371,7 +371,12 @@ def setupBTagging(process, jetSource, pfCandidates, explicitJTA, pvSource, svSou
                 setattr(
                     process, btagPrefix+btagInfo+labelName+postfix, 
                     btag.pfDeepFlavourTagInfos.clone(
-                        jets = jetSource
+                        jets = jetSource,
+                        vertices=pvSource,
+                        secondary_vertices=svSource,
+                        shallow_tag_infos = cms.InputTag(btagPrefix+'pfDeepCSVTagInfos'+labelName+postfix),
+                        puppi_value_map = "", # so it is not used
+                        pvasq_value_map = "", # so it is not used
                         )
                     )
                 if svClustering or fatJets != cms.InputTag(''):
@@ -670,7 +675,7 @@ class AddJetCollection(ConfigToolBase):
         getJetMCFlavour=self._parameters['getJetMCFlavour'].value
         genJetCollection=self._parameters['genJetCollection'].value
         genParticles=self._parameters['genParticles'].value
-        jetCorrections=sel, jetSourceOriginalf._parameters['jetCorrections'].value
+        jetCorrections=self._parameters['jetCorrections'].value
         btagDiscriminators=list(self._parameters['btagDiscriminators'].value)
         btagInfos=list(self._parameters['btagInfos'].value)
         jetTrackAssociation=self._parameters['jetTrackAssociation'].value
