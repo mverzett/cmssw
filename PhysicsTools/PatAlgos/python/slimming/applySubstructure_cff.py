@@ -79,11 +79,12 @@ def applySubstructure( process, postfix="" ) :
     #from RecoJets.JetProducers.ak8PFJetsPuppi_cfi import ak8PFJetsPuppi
     #getattr(process, "ak8PFJetsPuppi".doAreaFastjet = True # even for standard ak8PFJets this is overwritten in RecoJets/Configuration/python/RecoPFJets_cff
 
-        
-    addJetCollection(process, postfix=postfix,labelName = 'AK8Puppi',
+    noDeepFlavourDiscriminators = [x.value() for x in patJetsDefault.discriminatorSources if not "DeepFlavour" in x.value()]
+    addJetCollection(process, postfix=postfix, labelName = 'AK8Puppi',
                      jetSource = cms.InputTag('ak8PFJetsPuppi'+postfix),
                      algo= 'AK', rParam = 0.8,
-                     jetCorrections = ('AK8PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None'),
+                     jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
+                     btagDiscriminators = (noDeepFlavourDiscriminators + ['pfBoostedDoubleSecondaryVertexAK8BJetTags']),
                      genJetCollection = cms.InputTag('slimmedGenJetsAK8')
                      )
     getattr(process,"patJetsAK8Puppi"+postfix).userData.userFloats.src = [] # start with empty list of user floats

@@ -365,6 +365,22 @@ def setupBTagging(process, jetSource, pfCandidates, explicitJTA, pvSource, svSou
                 setattr(process, btagPrefix+btagInfo+labelName+postfix, btag.softPFMuonsTagInfos.clone(jets = jetSource, primaryVertex=pvSource, muons=muSource))
             if btagInfo == 'softPFElectronsTagInfos':
                 setattr(process, btagPrefix+btagInfo+labelName+postfix, btag.softPFElectronsTagInfos.clone(jets = jetSource, primaryVertex=pvSource, electrons=elSource))
+            if btagInfo == 'pfDeepFlavourTagInfos':
+                # as if now the training tag info is based on corrected jets
+                # so we expect a bit of a loss on performance
+                setattr(
+                    process, btagPrefix+btagInfo+labelName+postfix, 
+                    btag.pfDeepFlavourTagInfos.clone(
+                        jets = jetSource,
+                        vertices=pvSource,
+                        secondary_vertices=svSource,
+                        shallow_tag_infos = cms.InputTag(btagPrefix+'pfDeepCSVTagInfos'+labelName+postfix),
+                        puppi_value_map = "", # so it is not used
+                        pvasq_value_map = "", # so it is not used
+                        )
+                    )
+                if svClustering or fatJets != cms.InputTag(''):
+                    setupSVClustering(getattr(process, btagPrefix+btagInfo+labelName+postfix), svClustering, algo, rParam, fatJets, groomedFatJets)
             acceptedTagInfos.append(btagInfo)
         elif hasattr(toptag, btagInfo) :
             acceptedTagInfos.append(btagInfo)
