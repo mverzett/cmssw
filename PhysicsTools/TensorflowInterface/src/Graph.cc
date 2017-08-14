@@ -6,6 +6,7 @@
  */
 
 #include "PhysicsTools/TensorflowInterface/interface/Graph.h"
+#include <iostream>
 
 namespace tf
 {
@@ -18,8 +19,14 @@ Graph::Graph(const std::string& filename)
     , pyEvalSession(0)
 {
     LogDebug(logCategory) << "initialize graph";
-
     python.runScript(embeddedTensorflowScript);
+		
+    // update the python path to find tensorflow
+    std::string cmsswBase = std::string(getenv("CMSSW_BASE"));
+    std::string pythonPath = cmsswBase + "/python/RecoBTag/Tensorflow/";
+		std::cout << pythonPath << std::endl;
+    PyObject* result1 = python.call("insert_path", pythonPath);
+    python.release(result1);
 
     // import tensorflow
     PyObject* result = python.call("import_tf");

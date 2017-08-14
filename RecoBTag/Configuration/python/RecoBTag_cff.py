@@ -71,7 +71,7 @@ pfBTagging = cms.Sequence(
     # overall combined taggers
     ( #CSV + soft-lepton + jet probability discriminators combined
       pfCombinedMVAV2BJetTags *
-      pfDeepFlavourJetTags
+      pfDeepFlavourTaskNew
       )
 )
 

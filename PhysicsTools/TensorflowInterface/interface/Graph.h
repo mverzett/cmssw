@@ -63,6 +63,10 @@ static std::string embeddedTensorflowScript = "\
 import os, sys, numpy as np\n\
 tf = sess = saver = None\n\
 \n\
+def insert_path(path):\n\
+    path = os.path.expandvars(os.path.expanduser(path))\n\
+    sys.path.append(path)\n\
+\n\
 def import_tf():\n\
     global tf\n\
     import tensorflow as tf\n\
