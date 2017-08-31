@@ -56,8 +56,7 @@ DeepFlavourJetTagProducer::DeepFlavourJetTagProducer(const edm::ParameterSet& iC
   src_(consumes<TagInfoCollection>(iConfig.getParameter<edm::InputTag>("src"))),
   graph_path_(iConfig.getParameter<edm::FileInPath>("graph_path")),
   input_names_(iConfig.getParameter<std::vector<std::string>>("input_names")),
-  output_names_(iConfig.getParameter<std::vector<std::string>>("output_names")),
-  graph_(graph_path_.fullPath().substr(0, graph_path_.fullPath().find_last_of("/")), "serve")
+  output_names_(iConfig.getParameter<std::vector<std::string>>("output_names"))
 {
 
   // get output names from flav_table
@@ -75,6 +74,11 @@ DeepFlavourJetTagProducer::DeepFlavourJetTagProducer(const edm::ParameterSet& iC
   for (std::size_t i=0; i<input_names_.size(); i++) {
     dnn_inputs_.push_back(new tf::Tensor());
   }
+
+	// initialize the graph
+	graph_.addSessionOption("intra_op_parallelism_threads:1");
+	graph_.addSessionOption("inter_op_parallelism_threads:1");
+	graph_.init(graph_path_.fullPath().substr(0, graph_path_.fullPath().find_last_of("/")), "serve");
 
   // required because of batch norm
   // names for the learing phase placeholders (to init and set as false)
