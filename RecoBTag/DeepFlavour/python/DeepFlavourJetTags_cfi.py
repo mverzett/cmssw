@@ -8,7 +8,7 @@ pfDeepFlavourJetTags = cms.EDProducer(
     'DeepFlavourJetTagProducer',
     src = cms.InputTag('pfDeepFlavourTagInfos'),
     # path to .meta file (will be stripped)
-    graph_path = cms.FileInPath('RecoBTag/Combined/data/DeepFlavourV01/tf.meta'),
+    graph_path = cms.FileInPath('RecoBTag/Combined/data/DeepFlavour_Phase0_Run2016/tf.meta'),
     flav_table = cms.PSet(
                       probb = cms.vuint32([0]),
                       probbb = cms.vuint32([1]),
