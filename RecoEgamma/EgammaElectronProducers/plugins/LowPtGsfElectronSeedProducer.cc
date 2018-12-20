@@ -532,5 +532,5 @@ void LowPtGsfElectronSeedProducer::fillDescriptions( edm::ConfigurationDescripti
   desc.add<bool>("UsePfTracks",false);
   desc.add<double>("MinPtThreshold",0.5);
   desc.add<double>("MaxPtThreshold",15.);
-  descriptions.add("produceLowPtGsfElectronSeeds",desc);
+  descriptions.add("lowPtGsfElectronSeeds",desc);
 }
