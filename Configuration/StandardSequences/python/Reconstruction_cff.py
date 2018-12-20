@@ -50,6 +50,9 @@ from RecoLocalCalo.CastorReco.CastorSimpleReconstructor_cfi import *
 # Cosmic During Collisions
 from RecoTracker.SpecialSeedGenerators.cosmicDC_cff import *
 
+# Low pT electrons
+from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSequence_cff import *
+
 localreco = cms.Sequence(bunchSpacingProducer+trackerlocalreco+muonlocalreco+calolocalreco+castorreco)
 localreco_HcalNZS = cms.Sequence(bunchSpacingProducer+trackerlocalreco+muonlocalreco+calolocalrecoNZS+castorreco)
 
@@ -146,12 +149,9 @@ highlevelreco = cms.Sequence(egammaHighLevelRecoPrePF*
                              recoPFMET*
                              PFTau*
                              reducedRecHits*
-                             cosmicDCTracksSeq
+                             cosmicDCTracksSeq*
+                             lowPtGsfElectronSequence
                              )
-
-# LowPtGsfElectrons
-from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSequence_cff import *
-highlevelreco *= lowPtGsfElectronSequence
 
 # AA data with pp reco
 from Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017
