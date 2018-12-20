@@ -43,12 +43,36 @@ lowPtGsfElePfGsfTracks.PFRecTrackLabel = 'lowPtGsfElePfTracks'
 lowPtGsfElePfGsfTracks.applyGsfTrackCleaning = False
 lowPtGsfElePfGsfTracks.useFifthStepForTrackerDrivenGsf = True
 
+# SuperCluster generator and matching to GSF tracks
+# Below relies on the following default configurations:
+# RecoParticleFlow/PFClusterProducer/python/particleFlowClusterECALUncorrected_cfi.py
+# RecoParticleFlow/PFClusterProducer/python/particleFlowClusterECAL_cff.py
+# (particleFlowClusterECAL_cfi is generated automatically)
+from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSuperClusters_cfi import *
+lowPtGsfElectronSuperClusters.gsfPfRecTracks = 'lowPtGsfElePfGsfTracks'
+
+# Low pT electron cores
+from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronCores_cfi import *
+lowPtGsfElectronCores.gsfPfRecTracks = 'lowPtGsfElePfGsfTracks'
+lowPtGsfElectronCores.gsfTracks = 'lowPtGsfEleGsfTracks'
+lowPtGsfElectronCores.useGsfPfRecTracks = True
+
+# Low pT electrons
+from RecoEgamma.EgammaElectronProducers.lowPtGsfElectrons_cfi import *
+lowPtGsfElectrons.gsfElectronCoresTag = 'lowPtGsfElectronCores'
+lowPtGsfElectrons.seedsTag = 'lowPtGsfElectronSeeds'
+lowPtGsfElectrons.gsfPfRecTracksTag = ''
+lowPtGsfElectrons.useGsfPfRecTracks = False
+
 # Full sequence 
 lowPtGsfElectronTask = cms.Task(lowPtGsfElePfTracks,
                                 lowPtGsfElectronSeeds,
                                 lowPtGsfEleCkfTrackCandidates,
                                 lowPtGsfEleGsfTracks,
-                                lowPtGsfElePfGsfTracks)
+                                lowPtGsfElePfGsfTracks,
+                                lowPtGsfElectronSuperClusters,
+                                lowPtGsfElectronCores,
+                                lowPtGsfElectrons)
 lowPtGsfElectronSequence = cms.Sequence(lowPtGsfElectronTask)
 
 # Modifiers for FastSim
@@ -59,4 +83,5 @@ _fastSim_lowPtGsfElectronTask.replace(lowPtGsfEleCkfTrackCandidates, fastLowPtGs
 fastSim.toReplaceWith(lowPtGsfElectronTask, _fastSim_lowPtGsfElectronTask)
 fastSim.toModify(lowPtGsfElePfTracks,TkColList = ['generalTracksBeforeMixing'])
 fastSim.toModify(lowPtGsfEleGsfTracks,src = cms.InputTag("fastLowPtGsfTkfTrackCandidates"))
-
+fastSim.toModify(lowPtGsfElectronCores,ctfTracks = cms.InputTag("generalTracksBeforeMixing"))
+fastSim.toModify(lowPtGsfElectrons,ctfTracksTag = cms.InputTag("generalTracks"))
