@@ -59,15 +59,15 @@ void LowPtGsfElectronSCProducer::produce( edm::Event& event, const edm::EventSet
   auto caloClusters = std::make_unique<reco::CaloClusterCollection>( reco::CaloClusterCollection() );
   caloClusters->reserve(ecalClusters->size());
 
-  // Index for "best" CaloCluster per GSF track per trajectory point
+  // Index[GSF track][trajectory point] for "best" CaloCluster
   std::vector< std::vector<int> > cluster_idx;
   cluster_idx.resize( gsfPfRecTracks->size(), std::vector<int>() );
 
-  // Index for "best" PFCluster per GSF track per trajectory point
+  // Index[GSF track][trajectory point] for "best" PFCluster
   std::vector< std::vector<int> > pfcluster_idx;
   pfcluster_idx.resize( gsfPfRecTracks->size(), std::vector<int>() );
 
-  // dr2min for "best" cluster per GSF track per trajectory point
+  // dr2min[GSF track][trajectory point] for "best" CaloCluster
   std::vector< std::vector<float> > cluster_dr2min;
   cluster_dr2min.resize( gsfPfRecTracks->size(), std::vector<float>() );
 
@@ -75,20 +75,24 @@ void LowPtGsfElectronSCProducer::produce( edm::Event& event, const edm::EventSet
   std::vector< std::vector<const reco::PFTrajectoryPoint*> > points;
   points.resize( gsfPfRecTracks->size(), std::vector<const reco::PFTrajectoryPoint*>() );
   for ( size_t itrk = 0; itrk < gsfPfRecTracks->size(); ++itrk ) { 
+    // Extrapolated track
     reco::GsfPFRecTrackRef trk(gsfPfRecTracks,itrk);
+    points[itrk].reserve(trk->PFRecBrem().size()+1);
     points[itrk].push_back( &trk->extrapolatedPoint(reco::PFTrajectoryPoint::LayerType::ECALShowerMax) );
+    // Extrapolated brem trajectories
     for ( auto brem : trk->PFRecBrem() ) {
       points[itrk].push_back( &brem.extrapolatedPoint(reco::PFTrajectoryPoint::LayerType::ECALShowerMax) ); 
     }
+    // Resize containers
     cluster_idx[itrk].resize(points[itrk].size(),-1);
     pfcluster_idx[itrk].resize(points[itrk].size(),-1);
-    cluster_dr2min[itrk].resize(points[itrk].size(),dr2_);
+    cluster_dr2min[itrk].resize(points[itrk].size(),1.e6);
   }
 
-  // Cache matching of clusters to trajectory points ("global" arbitration at event level)
+  // For each cluster, find closest trajectory point ("global" arbitration at event level)
   for ( size_t iclu = 0; iclu < ecalClusters->size(); ++iclu ) { // Cluster loop
     std::pair<int,int> point = std::make_pair(-1,-1);
-    float dr2min = dr2_;
+    float dr2min = 1.e6;
     for ( size_t ipoint = 0; ipoint < points.size(); ++ipoint ) { // GSF track loop
       for ( size_t jpoint = 0; jpoint < points[ipoint].size(); ++jpoint ) { // Traj point loop
 	if ( points[ipoint][jpoint]->isValid() ) {
@@ -101,12 +105,11 @@ void LowPtGsfElectronSCProducer::produce( edm::Event& event, const edm::EventSet
 	}
       }
     }
-    if ( point.first >= 0 && 
-	 point.second >= 0 && 
-	 dr2min < cluster_dr2min[point.first][point.second] ) {
+    if ( point.first >= 0 && point.second >= 0 && // if this cluster is matched to a point ...
+	 dr2min < cluster_dr2min[point.first][point.second] ) { // ... and cluster is closest to the same point 
       // Copy CaloCluster to new collection
       caloClusters->push_back(ecalClusters->at(iclu));
-      // Store index for creation of SC later
+      // Store cluster index for creation of SC later
       cluster_idx[point.first][point.second] = caloClusters->size()-1;
       pfcluster_idx[point.first][point.second] = iclu;
       cluster_dr2min[point.first][point.second] = dr2min;
@@ -126,18 +129,31 @@ void LowPtGsfElectronSCProducer::produce( edm::Event& event, const edm::EventSet
     reco::CaloClusterPtrVector clusters;
     std::vector<const reco::PFCluster*> barePtrs;
 
-    // Loop through clusters associated with GSF track (via points)
-    for ( size_t iclu = 0; iclu < cluster_idx[itrk].size(); ++iclu ) { 
-      if ( cluster_idx[itrk][iclu] < 0 ) { continue; }
-      reco::CaloClusterPtr clu(caloClustersH,cluster_idx[itrk][iclu]);
+    // Find closest match in dr2 from points associated to given track
+    int index = -1;
+    float dr2 = 1.e6;
+    for ( size_t ipoint = 0; ipoint < cluster_idx[itrk].size(); ++ipoint ) { 
+      if ( cluster_idx[itrk][ipoint] < 0 ) { continue; }
+      if ( cluster_dr2min[itrk][ipoint] < dr2 ) {
+	dr2 = cluster_dr2min[itrk][ipoint];
+	index = cluster_idx[itrk][ipoint];
+      }
+    }
+ 
+    // For each track, loop through points and use associated cluster
+    for ( size_t ipoint = 0; ipoint < cluster_idx[itrk].size(); ++ipoint ) { 
+      if ( cluster_idx[itrk][ipoint] < 0 ) { continue; }
+      reco::CaloClusterPtr clu(caloClustersH,cluster_idx[itrk][ipoint]);
       if ( clu.isNull() ) { continue; }
+      if ( !( cluster_dr2min[itrk][ipoint] < dr2_ || // Require cluster to be closer than dr2_ ...
+	      index == cluster_idx[itrk][ipoint] ) ) { continue; } // ... unless it is the closest one ...
       if ( seed.isNull() ) { seed = clu; }
       clusters.push_back(clu);
       energy += clu->correctedEnergy();
       X += clu->position().X() * clu->correctedEnergy();
       Y += clu->position().Y() * clu->correctedEnergy();
       Z += clu->position().Z() * clu->correctedEnergy();
-      reco::PFClusterRef pfclu(ecalClusters,pfcluster_idx[itrk][iclu]);
+      reco::PFClusterRef pfclu(ecalClusters,pfcluster_idx[itrk][ipoint]);
       if ( pfclu.isNonnull() ) { barePtrs.push_back(&*pfclu); }
     }
     X /= energy;
