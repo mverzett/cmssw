@@ -424,6 +424,15 @@ def miniAOD_customizeCommon(process):
     delattr(process, 'selectedUpdatedPatJetsPuppiJetSpecific')
 
     task.add(process.slimmedJetsPuppi)
+
+    # Embed pixelClusterTagInfos in slimmedJets
+    process.patJets.addTagInfos = cms.bool(True)
+    process.patJets.tagInfoSources.append( cms.InputTag("pixelClusterTagInfos") )
+    process.slimmedJetsNoDeepFlavour.dropTagInfos = cms.string('0')
+    process.updatedPatJetsSlimmedDeepFlavour.addTagInfos = cms.bool(True)
+    process.updatedPatJetsSlimmedDeepFlavour.tagInfoSources.append( cms.InputTag("pixelClusterTagInfos") )
+    process.updatedPatJetsTransientCorrectedSlimmedDeepFlavour.addTagInfos = cms.bool(True)
+    process.updatedPatJetsTransientCorrectedSlimmedDeepFlavour.tagInfoSources.append( cms.InputTag("pixelClusterTagInfos") )
     
     ## puppi met
     from PhysicsTools.PatAlgos.slimming.puppiForMET_cff import makePuppies
